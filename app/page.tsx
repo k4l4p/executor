@@ -73,7 +73,7 @@ export default function Home() {
 	const handleformSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		const target = event.currentTarget
-    setContractAddress(contractAddress)
+    setContractAddress(target.contract.value)
 
 		try {
 			const parseData = JSON.parse(target.abi.value)

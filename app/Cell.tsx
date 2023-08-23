@@ -1,15 +1,18 @@
 import { AbiFunction } from "abitype"
 import React, { useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
-import { writeContract } from "wagmi/actions"
+import { Abi } from "viem"
+import { useContractRead } from "wagmi"
+import { readContract, writeContract } from "wagmi/actions"
 
 type CellType = {
 	info: AbiFunction
-  address: `0x${string}`
+	address: `0x${string}`
 }
 
-const Cell = ({ info }: CellType) => {
+const Cell = ({ info, address }: CellType) => {
 	const [isOpen, setIsOpen] = useState(false)
+	const [errorMsg, setErrorMsg] = useState<null | string>(null)
 
 	const {
 		register,
@@ -17,15 +20,37 @@ const Cell = ({ info }: CellType) => {
 		watch,
 		formState: { errors },
 	} = useForm<Record<string, string>>()
-	const onSubmit: SubmitHandler<Record<string, string>> = async (data) =>
-		{
-      const { hash } = await writeContract({
-        address: '0xecb504d39723b0be0e3a9aa33d646642d1051ee1',
-        abi: [info],
-        functionName: info.name as never,
-        args: [69],
-      })
-    }
+	const onSubmit: SubmitHandler<Record<string, string>> = async (data) => {
+		setErrorMsg(null)
+		try {
+		
+		if (
+			info.stateMutability === "payable" ||
+			info.stateMutability === "nonpayable"
+		) {
+			const { hash } = await writeContract({
+				address: address,
+				abi: [info],
+				functionName: info.name as never,
+				args: Object.values(data),
+			})
+			console.log(hash)
+		} else {
+			const ret = await readContract({
+				address: address,
+				abi: [info],
+				functionName: info.name as never,
+				args: Object.values(data),
+			})
+			console.log(ret)
+		}
+	} catch (err) {
+		if (err instanceof Error) {
+			setErrorMsg(err.message)
+		}
+		console.log(err)
+	}
+	}
 
 	return (
 		<li key={info.name} className="py-5 flex flex-col gap-5">
@@ -98,6 +123,14 @@ const Cell = ({ info }: CellType) => {
 						Submit
 					</button>
 				</form>
+			</div>
+			<div
+				className={
+					"overflow-hidden bg-red-900 shadow sm:rounded-lg " +
+					(errorMsg ? "block" : "hidden")
+				}
+			>
+				<div className="px-4 py-5 sm:p-6">{errorMsg}</div>
 			</div>
 		</li>
 	)
