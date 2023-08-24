@@ -147,7 +147,7 @@ export default function Home() {
 								Load Contract
 							</button>
 						</form>
-						<div className="grow px-4">
+						<div className="grow px-4 w-3/4">
 							<div
 								className="hover:bg-white/10 transition-colors px-4 py-5 cursor-pointer"
 								onClick={() => {
