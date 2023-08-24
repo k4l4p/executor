@@ -162,7 +162,7 @@ const Cell = ({ info, address }: CellType) => {
 				>
 					<div className="flex flex-col gap-3 px-4 py-5 sm:p-6">
 						<h3>Result:</h3>
-						<p>{returnValue as ReactNode}</p>
+						<p className="break-all">{returnValue as ReactNode}</p>
 					</div>
 				</div>
 			</div>

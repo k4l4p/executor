@@ -44,7 +44,7 @@ type AbiItem =
 const { chains, publicClient, webSocketPublicClient } = configureChains(
 	[arbitrum],
 	[
-		alchemyProvider({ apiKey: 'Oie23PxOOG_d1d7uT3FQGE6sgrLu7Dl9' }),
+		alchemyProvider({ apiKey: "Oie23PxOOG_d1d7uT3FQGE6sgrLu7Dl9" }),
 		publicProvider(),
 	]
 )
@@ -65,17 +65,24 @@ const config = createConfig({
 	connectors,
 })
 
+const search = (abi: Array<AbiItem>, searchWordings: string) => {
+	if (searchWordings === "") return abi
+	return abi.filter(
+		(item) => item.type === "function" && item.name.toLowerCase().includes(searchWordings.toLowerCase())
+	)
+}
+
 export default function Home() {
 	const [abi, setAbi] = useState<null | Abi>([])
 
 	const [isOpenRead, setIsOpenRead] = useState(true)
 	const [isOpenWrite, setIsOpenWrite] = useState(true)
-
 	const [contractAddress, setContractAddress] = useState<`0x${string}`>("0x")
-
 	const [viewFunctions, setViewFunctions] = useState<Array<AbiItem>>([])
-
 	const [writeFunctions, setWriteFunctions] = useState<Array<AbiItem>>([])
+
+	const [searchInput, setSearchInput] = useState("")
+
 	const handleformSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		const target = event.currentTarget
@@ -150,6 +157,30 @@ export default function Home() {
 							</button>
 						</form>
 						<div className="grow px-4 w-3/4">
+							<div>
+								<label
+									htmlFor="search"
+									className="block text-sm font-medium leading-6 text-gray-900"
+								>
+									Quick search
+								</label>
+								<div className="relative mt-2 flex items-center">
+									<input
+										onChange={(e) => {
+											setSearchInput(e.target.value)
+										}}
+										type="text"
+										name="search"
+										id="search"
+										className="bg-transparent block w-full rounded-md border-0 py-1.5 pr-14 pl-2 text-gray-50 shadow-sm ring-1 ring-inset ring-gray-500 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+									/>
+									<div className="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
+										<kbd className="inline-flex items-center rounded border border-gray-800 px-1 font-sans text-xs text-gray-400">
+											⌘K
+										</kbd>
+									</div>
+								</div>
+							</div>
 							<div
 								className="hover:bg-white/10 transition-colors px-4 py-5 cursor-pointer"
 								onClick={() => {
@@ -166,7 +197,7 @@ export default function Home() {
 
 							{isOpenRead && (
 								<ul role="list" className="divide-y divide-gray-800">
-									{viewFunctions.map((f) => {
+									{search(viewFunctions, searchInput).map((f) => {
 										if (f.type === "function") {
 											return (
 												<Cell key={f.name} info={f} address={contractAddress} />
@@ -185,11 +216,13 @@ export default function Home() {
 								<h3 className="text-lg font-semibold leading-6 text-white">
 									Write Functions
 								</h3>
-								<p className="mt-1 text-sm text-gray-500">Payable and Nonpayable functions.</p>
+								<p className="mt-1 text-sm text-gray-500">
+									Payable and Nonpayable functions.
+								</p>
 							</div>
 							{isOpenWrite && (
 								<ul role="list" className=" divide-y divide-gray-800">
-									{writeFunctions.map((f) => {
+									{search(writeFunctions, searchInput).map((f) => {
 										if (f.type === "function") {
 											return (
 												<Cell key={f.name} info={f} address={contractAddress} />
