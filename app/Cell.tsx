@@ -1,9 +1,14 @@
 import { AbiFunction } from "abitype"
 import React, { ReactNode, useState } from "react"
-import { SubmitHandler, useForm } from "react-hook-form"
+import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { Abi } from "viem"
 import { useContractRead } from "wagmi"
-import { readContract, writeContract } from "wagmi/actions"
+import {
+	prepareWriteContract,
+	readContract,
+	writeContract,
+} from "wagmi/actions"
+import Toggle from "./Toggle"
 
 type CellType = {
 	info: AbiFunction
@@ -19,9 +24,14 @@ const Cell = ({ info, address }: CellType) => {
 		register,
 		handleSubmit,
 		watch,
+		control,
 		formState: { errors },
-	} = useForm<Record<string, string>>()
-	const onSubmit: SubmitHandler<Record<string, string>> = async (data) => {
+	} = useForm<Record<string, string | boolean>>({
+		defaultValues: info.inputs.reduce((aggr, curr, idx) => ({...aggr, [idx]: curr.type === 'bool'? false : ''}), {}),
+	})
+	const onSubmit: SubmitHandler<Record<string, string | boolean>> = async (
+		data
+	) => {
 		setErrorMsg(null)
 		setReturnValue(null)
 		try {
@@ -29,13 +39,15 @@ const Cell = ({ info, address }: CellType) => {
 				info.stateMutability === "payable" ||
 				info.stateMutability === "nonpayable"
 			) {
-				const { hash } = await writeContract({
-					address: address,
+				const { request, result } = await prepareWriteContract({
+					address,
 					abi: [info],
 					functionName: info.name as never,
 					args: Object.values(data),
 				})
-				console.log(hash)
+
+				const { hash } = await writeContract(request)
+				setReturnValue(`Trx hash: ${hash}`)
 			} else {
 				const ret = await readContract({
 					address: address,
@@ -54,7 +66,10 @@ const Cell = ({ info, address }: CellType) => {
 	}
 
 	return (
-		<li key={info.name} className="hover:bg-white/10 transition-colors py-5 flex flex-col gap-5 px-6">
+		<li
+			key={info.name}
+			className="hover:bg-white/10 transition-colors py-5 flex flex-col gap-5 px-6"
+		>
 			<div
 				onClick={() => {
 					setIsOpen(!isOpen)
@@ -99,11 +114,15 @@ const Cell = ({ info, address }: CellType) => {
 									placeholder="address"
 								/>
 							) : i.type.includes("bool") ? (
-								<input
-									{...register(idx.toString())}
-									type="text"
-									className="bg-transparent block w-full rounded-md border-0 py-1.5 px-2 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-									placeholder="true / false"
+								<Controller
+									name={idx.toString()}
+									control={control}
+									render={({ field }) => (
+										<Toggle
+											setEnabled={(e) => field.onChange(e)}
+											enabled={field.value as boolean}
+										/>
+									)}
 								/>
 							) : i.type.includes("bytes") ? (
 								<input
@@ -125,27 +144,27 @@ const Cell = ({ info, address }: CellType) => {
 					</button>
 				</form>
 				<div
-				className={
-					"overflow-hidden bg-red-900 shadow sm:rounded-lg " +
-					(errorMsg !== null ? "block" : "hidden")
-				}
-			>
-				<div className="flex flex-col gap-3 px-4 py-5 sm:p-6">
-					<h3>Error:</h3>
-					<p className="break-all">{errorMsg}</p>
+					className={
+						"overflow-hidden bg-red-900 shadow sm:rounded-lg " +
+						(errorMsg !== null ? "block" : "hidden")
+					}
+				>
+					<div className="flex flex-col gap-3 px-4 py-5 sm:p-6">
+						<h3>Error:</h3>
+						<p className="break-all">{errorMsg}</p>
+					</div>
 				</div>
-			</div>
-			<div
-				className={
-					"overflow-hidden bg-indigo-950 shadow sm:rounded-lg " +
-					(returnValue !== null ? "block" : "hidden")
-				}
-			>
-				<div className="flex flex-col gap-3 px-4 py-5 sm:p-6">
-					<h3>Result:</h3>
-					<p>{returnValue as ReactNode}</p>
+				<div
+					className={
+						"overflow-hidden bg-indigo-950 shadow sm:rounded-lg " +
+						(returnValue !== null ? "block" : "hidden")
+					}
+				>
+					<div className="flex flex-col gap-3 px-4 py-5 sm:p-6">
+						<h3>Result:</h3>
+						<p>{returnValue as ReactNode}</p>
+					</div>
 				</div>
-			</div>
 			</div>
 		</li>
 	)
