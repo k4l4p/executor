@@ -132,7 +132,7 @@ const Cell = ({ info, address }: CellType) => {
 			>
 				<div className="flex flex-col gap-3 px-4 py-5 sm:p-6">
 					<h3>Error:</h3>
-					<p>{errorMsg}</p>
+					<p className="break-all">{errorMsg}</p>
 				</div>
 			</div>
 			<div
