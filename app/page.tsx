@@ -65,15 +65,19 @@ const config = createConfig({
 
 export default function Home() {
 	const [abi, setAbi] = useState<null | Abi>([])
-	const [contractAddress, setContractAddress] = useState<`0x${string}`>('0x')
+
+	const [isOpenRead, setIsOpenRead] = useState(true)
+	const [isOpenWrite, setIsOpenWrite] = useState(true)
+
+	const [contractAddress, setContractAddress] = useState<`0x${string}`>("0x")
 
 	const [viewFunctions, setViewFunctions] = useState<Array<AbiItem>>([])
 
-  const [writeFunctions, setWriteFunctions] = useState<Array<AbiItem>>([])
+	const [writeFunctions, setWriteFunctions] = useState<Array<AbiItem>>([])
 	const handleformSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		const target = event.currentTarget
-    setContractAddress(target.contract.value)
+		setContractAddress(target.contract.value)
 
 		try {
 			const parseData = JSON.parse(target.abi.value)
@@ -85,11 +89,12 @@ export default function Home() {
 						(p.stateMutability === "pure" || p.stateMutability === "view")
 				)
 			)
-      setWriteFunctions(
+			setWriteFunctions(
 				parsedAbi.filter(
 					(p) =>
 						p.type === "function" &&
-						(p.stateMutability === "payable" || p.stateMutability === "nonpayable")
+						(p.stateMutability === "payable" ||
+							p.stateMutability === "nonpayable")
 				)
 			)
 		} catch (err) {
@@ -143,7 +148,12 @@ export default function Home() {
 							</button>
 						</form>
 						<div className="grow px-4">
-							<div className="px-4 py-5">
+							<div
+								className="hover:bg-white/10 transition-colors px-4 py-5 cursor-pointer"
+								onClick={() => {
+									setIsOpenRead(!isOpenRead)
+								}}
+							>
 								<h3 className="text-lg font-semibold leading-6 text-white">
 									Read Functions
 								</h3>
@@ -152,34 +162,40 @@ export default function Home() {
 								</p>
 							</div>
 
-							<ul role="list" className="px-4 divide-y divide-gray-800">
-								{viewFunctions.map((f) => {
-									if (f.type === "function") {
-										return (
-											<Cell key={f.name} info={f} address={contractAddress}/>
-										)
-									}
-								})}
-							</ul>
+							{isOpenRead && (
+								<ul role="list" className="divide-y divide-gray-800">
+									{viewFunctions.map((f) => {
+										if (f.type === "function") {
+											return (
+												<Cell key={f.name} info={f} address={contractAddress} />
+											)
+										}
+									})}
+								</ul>
+							)}
 
-              <div className="px-4 py-5">
+							<div
+								className="hover:bg-white/10 transition-colors px-4 py-5 cursor-pointer"
+								onClick={() => {
+									setIsOpenWrite(!isOpenWrite)
+								}}
+							>
 								<h3 className="text-lg font-semibold leading-6 text-white">
 									Write Functions
 								</h3>
-								<p className="mt-1 text-sm text-gray-500">
-									Payable functions.
-								</p>
+								<p className="mt-1 text-sm text-gray-500">Payable and Nonpayable functions.</p>
 							</div>
-              <ul role="list" className="px-4 divide-y divide-gray-800">
-								{writeFunctions.map((f) => {
-									if (f.type === "function") {
-										return (
-											<Cell key={f.name} info={f} address={contractAddress}/>
-										)
-									}
-								})}
-							</ul>
-
+							{isOpenWrite && (
+								<ul role="list" className=" divide-y divide-gray-800">
+									{writeFunctions.map((f) => {
+										if (f.type === "function") {
+											return (
+												<Cell key={f.name} info={f} address={contractAddress} />
+											)
+										}
+									})}
+								</ul>
+							)}
 						</div>
 					</div>
 				</div>

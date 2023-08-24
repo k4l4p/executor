@@ -1,5 +1,5 @@
 import { AbiFunction } from "abitype"
-import React, { useState } from "react"
+import React, { ReactNode, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { Abi } from "viem"
 import { useContractRead } from "wagmi"
@@ -13,6 +13,7 @@ type CellType = {
 const Cell = ({ info, address }: CellType) => {
 	const [isOpen, setIsOpen] = useState(false)
 	const [errorMsg, setErrorMsg] = useState<null | string>(null)
+	const [returnValue, setReturnValue] = useState<unknown>(null)
 
 	const {
 		register,
@@ -22,38 +23,38 @@ const Cell = ({ info, address }: CellType) => {
 	} = useForm<Record<string, string>>()
 	const onSubmit: SubmitHandler<Record<string, string>> = async (data) => {
 		setErrorMsg(null)
+		setReturnValue(null)
 		try {
-		
-		if (
-			info.stateMutability === "payable" ||
-			info.stateMutability === "nonpayable"
-		) {
-			const { hash } = await writeContract({
-				address: address,
-				abi: [info],
-				functionName: info.name as never,
-				args: Object.values(data),
-			})
-			console.log(hash)
-		} else {
-			const ret = await readContract({
-				address: address,
-				abi: [info],
-				functionName: info.name as never,
-				args: Object.values(data),
-			})
-			console.log(ret)
+			if (
+				info.stateMutability === "payable" ||
+				info.stateMutability === "nonpayable"
+			) {
+				const { hash } = await writeContract({
+					address: address,
+					abi: [info],
+					functionName: info.name as never,
+					args: Object.values(data),
+				})
+				console.log(hash)
+			} else {
+				const ret = await readContract({
+					address: address,
+					abi: [info],
+					functionName: info.name as never,
+					args: Object.values(data),
+				})
+				setReturnValue((ret as any).toString())
+			}
+		} catch (err) {
+			if (err instanceof Error) {
+				setErrorMsg(err.message)
+			}
+			console.log(err)
 		}
-	} catch (err) {
-		if (err instanceof Error) {
-			setErrorMsg(err.message)
-		}
-		console.log(err)
-	}
 	}
 
 	return (
-		<li key={info.name} className="py-5 flex flex-col gap-5">
+		<li key={info.name} className="hover:bg-white/10 transition-colors py-5 flex flex-col gap-5 px-6">
 			<div
 				onClick={() => {
 					setIsOpen(!isOpen)
@@ -71,7 +72,7 @@ const Cell = ({ info, address }: CellType) => {
 					</div>
 				</div>
 			</div>
-			<div className={isOpen ? "block" : "hidden"}>
+			<div className={isOpen ? "flex flex-col gap-2" : "hidden"}>
 				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
 					{info.inputs.map((i, idx) => (
 						<React.Fragment key={idx}>
@@ -123,14 +124,28 @@ const Cell = ({ info, address }: CellType) => {
 						Submit
 					</button>
 				</form>
+				<div
+				className={
+					"overflow-hidden bg-red-900 shadow sm:rounded-lg " +
+					(errorMsg !== null ? "block" : "hidden")
+				}
+			>
+				<div className="flex flex-col gap-3 px-4 py-5 sm:p-6">
+					<h3>Error:</h3>
+					<p>{errorMsg}</p>
+				</div>
 			</div>
 			<div
 				className={
-					"overflow-hidden bg-red-900 shadow sm:rounded-lg " +
-					(errorMsg ? "block" : "hidden")
+					"overflow-hidden bg-indigo-950 shadow sm:rounded-lg " +
+					(returnValue !== null ? "block" : "hidden")
 				}
 			>
-				<div className="px-4 py-5 sm:p-6">{errorMsg}</div>
+				<div className="flex flex-col gap-3 px-4 py-5 sm:p-6">
+					<h3>Result:</h3>
+					<p>{returnValue as ReactNode}</p>
+				</div>
+			</div>
 			</div>
 		</li>
 	)
