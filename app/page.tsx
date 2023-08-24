@@ -39,10 +39,12 @@ type AbiItem =
 	| AbiFunction
 	| AbiReceive
 
+const alchelmyKey = process.env?.NEXT_PUBLIC_ALCHEMY_KEY ?? ''
+
 const { chains, publicClient, webSocketPublicClient } = configureChains(
 	[arbitrum],
 	[
-		alchemyProvider({ apiKey: "Oie23PxOOG_d1d7uT3FQGE6sgrLu7Dl9" }),
+		alchemyProvider({ apiKey: alchelmyKey }),
 		publicProvider(),
 	]
 )
