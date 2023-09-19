@@ -157,7 +157,7 @@ export default function Home() {
 							</div>
 							<div>
 								<label className="block text-sm font-medium leading-6">
-									OR Abi URL address:
+									OR ABI URL address:
 								</label>
 								<div className="mt-2">
 									<input
