@@ -14,7 +14,7 @@ import {
 	getDefaultWallets,
 	RainbowKitProvider,
 } from "@rainbow-me/rainbowkit"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import {
 	injectedWallet,
 	metaMaskWallet,
@@ -30,6 +30,7 @@ import {
 	AbiReceive,
 } from "abitype"
 import Cell from "./Cell"
+import useCtrlKFocus from "@/hooks/useCtrlKFocus"
 
 type AbiItem =
 	| AbiConstructor
@@ -74,7 +75,8 @@ const search = (abi: Array<AbiItem>, searchWordings: string) => {
 
 export default function Home() {
 	const [abi, setAbi] = useState<null | Abi>([])
-
+	const searchRef = useRef<HTMLInputElement>(null)
+	useCtrlKFocus(searchRef)
 	const [isOpenRead, setIsOpenRead] = useState(true)
 	const [isOpenWrite, setIsOpenWrite] = useState(true)
 	const [contractAddress, setContractAddress] = useState<`0x${string}`>("0x")
@@ -166,12 +168,14 @@ export default function Home() {
 								</label>
 								<div className="relative mt-2 flex items-center">
 									<input
+										ref={searchRef}
 										onChange={(e) => {
 											setSearchInput(e.target.value)
 										}}
 										type="text"
 										name="search"
 										id="search"
+										placeholder="e.g. balanceOf"
 										className="bg-transparent block w-full rounded-md border-0 py-1.5 pr-14 pl-2 text-gray-50 shadow-sm ring-1 ring-inset ring-gray-500 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
 									/>
 									<div className="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
