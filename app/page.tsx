@@ -69,7 +69,9 @@ const config = createConfig({
 const search = (abi: Array<AbiItem>, searchWordings: string) => {
 	if (searchWordings === "") return abi
 	return abi.filter(
-		(item) => item.type === "function" && item.name.toLowerCase().includes(searchWordings.toLowerCase())
+		(item) =>
+			item.type === "function" &&
+			item.name.toLowerCase().includes(searchWordings.toLowerCase())
 	)
 }
 
@@ -85,13 +87,15 @@ export default function Home() {
 
 	const [searchInput, setSearchInput] = useState("")
 
-	const handleformSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+	const handleformSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		const target = event.currentTarget
 		setContractAddress(target.contract.value)
 
 		try {
-			const parseData = JSON.parse(target.abi.value)
+			const parseData = target.abiURL.value
+				? await fetch(target.abiURL.value).then((res) => res.json())
+				: JSON.parse(target.abi.value)
 			const parsedAbi: Abi = parseData.abi
 			setViewFunctions(
 				parsedAbi.filter(
@@ -150,6 +154,20 @@ export default function Home() {
 									className="block px-2 w-full rounded-md border-0 py-1.5 bg-transparent shadow-sm ring-1 ring-insetfocus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
 									defaultValue={""}
 								/>
+							</div>
+							<div>
+								<label className="block text-sm font-medium leading-6">
+									OR Abi URL address:
+								</label>
+								<div className="mt-2">
+									<input
+										type="text"
+										name="abiURL"
+										id="abiURL"
+										className="bg-transparent block w-full rounded-md border-0 py-1.5 px-2 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+										placeholder="e.g. https://raw.githubusercontent.com/....abi.json"
+									/>
+								</div>
 							</div>
 							<button
 								type="submit"
