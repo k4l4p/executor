@@ -77,7 +77,17 @@ const Cell = ({ info, address }: CellType) => {
 						functionName: info.name as never,
 						args,
 					})
-					setReturnValue((ret as any).toString())
+					if(Array.isArray(ret)) {
+						setReturnValue(ret.map((item, idx) => {
+							const name = (info.outputs[idx].name ? info.outputs[idx].name : idx) ?? idx
+							return <div key={idx}>
+								{`${name}: ${item}`}
+							</div>
+						}))
+					
+					} else {
+						setReturnValue((ret as any).toString())
+					}
 				}
 			}
 		} catch (err) {
