@@ -27,7 +27,13 @@ const Cell = ({ info, address }: CellType) => {
 		control,
 		formState: { errors },
 	} = useForm<Record<string, string | boolean>>({
-		defaultValues: info.inputs.reduce((aggr, curr, idx) => ({...aggr, [idx]: curr.type === 'bool'? false : ''}), {}),
+		defaultValues: info.inputs.reduce(
+			(aggr, curr, idx) => ({
+				...aggr,
+				[idx]: curr.type === "bool" ? false : "",
+			}),
+			{}
+		),
 	})
 	const onSubmit: SubmitHandler<Record<string, string | boolean>> = async (
 		data
@@ -35,27 +41,44 @@ const Cell = ({ info, address }: CellType) => {
 		setErrorMsg(null)
 		setReturnValue(null)
 		try {
-			if (
-				info.stateMutability === "payable" ||
-				info.stateMutability === "nonpayable"
-			) {
-				const { request, result } = await prepareWriteContract({
-					address,
-					abi: [info],
-					functionName: info.name as never,
-					args: Object.values(data),
-				})
+			const args = Object.values(data)
 
-				const { hash } = await writeContract(request)
-				setReturnValue(`Trx hash: ${hash}`)
-			} else {
-				const ret = await readContract({
-					address: address,
-					abi: [info],
-					functionName: info.name as never,
-					args: Object.values(data),
-				})
-				setReturnValue((ret as any).toString())
+			switch (info.stateMutability) {
+				case "payable": {
+					const value = BigInt(args.pop() ?? 0)
+					const { request, result } = await prepareWriteContract({
+						address,
+						abi: [info],
+						functionName: info.name as never,
+						args,
+						value,
+					})
+
+					const { hash } = await writeContract(request)
+					setReturnValue(`Trx hash: ${hash}`)
+					break
+				}
+				case "nonpayable": {
+					const { request, result } = await prepareWriteContract({
+						address,
+						abi: [info],
+						functionName: info.name as never,
+						args,
+					})
+
+					const { hash } = await writeContract(request)
+					setReturnValue(`Trx hash: ${hash}`)
+					break
+				}
+				default: {
+					const ret = await readContract({
+						address: address,
+						abi: [info],
+						functionName: info.name as never,
+						args,
+					})
+					setReturnValue((ret as any).toString())
+				}
 			}
 		} catch (err) {
 			if (err instanceof Error) {
@@ -134,8 +157,20 @@ const Cell = ({ info, address }: CellType) => {
 							) : (
 								<></>
 							)}
+							{}
 						</React.Fragment>
 					))}
+					{info.stateMutability === "payable" && (
+						<>
+							<h5 className="text-sm text-red-500">Payable value:</h5>
+							<input
+								{...register("payable_value")}
+								type="text"
+								className="bg-transparent block w-full rounded-md border-0 py-1.5 px-2 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+								placeholder="uint256"
+							/>
+						</>
+					)}
 					<button
 						type="submit"
 						className="self-end rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
