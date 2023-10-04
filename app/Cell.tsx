@@ -79,7 +79,7 @@ const Cell = ({ info, address }: CellType) => {
 					})
 					if(Array.isArray(ret)) {
 						setReturnValue(ret.map((item, idx) => {
-							const name = (info.outputs[idx].name ? info.outputs[idx].name : idx) ?? idx
+							const name = info.outputs[idx]?.name ?? idx
 							return <div key={idx}>
 								{`${name}: ${item}`}
 							</div>
