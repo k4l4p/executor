@@ -1,26 +1,19 @@
 "use client"
 import "@rainbow-me/rainbowkit/styles.css"
-import { WagmiConfig, configureChains, createConfig } from "wagmi"
-import { Abi, createPublicClient, http } from "viem"
+import { Abi } from "viem"
 import { arbitrum } from "viem/chains"
-import { publicProvider } from "wagmi/providers/public"
+import { WagmiConfig, configureChains, createConfig } from "wagmi"
 import { alchemyProvider } from "wagmi/providers/alchemy"
-import { MetaMaskConnector } from "wagmi/connectors/metaMask"
+import { publicProvider } from "wagmi/providers/public"
 
+import useCtrlKFocus from "@/hooks/useCtrlKFocus"
 import {
 	ConnectButton,
+	RainbowKitProvider,
 	connectorsForWallets,
 	darkTheme,
-	getDefaultWallets,
-	RainbowKitProvider,
 } from "@rainbow-me/rainbowkit"
-import { useRef, useState } from "react"
-import {
-	injectedWallet,
-	metaMaskWallet,
-	rainbowWallet,
-	walletConnectWallet,
-} from "@rainbow-me/rainbowkit/wallets"
+import { injectedWallet, metaMaskWallet } from "@rainbow-me/rainbowkit/wallets"
 import {
 	AbiConstructor,
 	AbiError,
@@ -29,8 +22,9 @@ import {
 	AbiFunction,
 	AbiReceive,
 } from "abitype"
+import { useRef, useState } from "react"
 import Cell from "./Cell"
-import useCtrlKFocus from "@/hooks/useCtrlKFocus"
+import { mode_network } from "./mode_network"
 
 type AbiItem =
 	| AbiConstructor
@@ -43,10 +37,10 @@ type AbiItem =
 // const alchelmyKey = process.env?.NEXT_PUBLIC_ALCHEMY_KEY ?? ''
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-	[arbitrum],
+	[arbitrum, mode_network],
 	[
-		alchemyProvider({ apiKey: "Oie23PxOOG_d1d7uT3FQGE6sgrLu7Dl9" }),
 		publicProvider(),
+		alchemyProvider({ apiKey: "Oie23PxOOG_d1d7uT3FQGE6sgrLu7Dl9" }),
 	]
 )
 
