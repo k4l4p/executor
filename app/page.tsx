@@ -26,6 +26,7 @@ import { useRef, useState } from "react"
 import Cell from "./Cell"
 import { karak } from "./karak"
 import { mode_network } from "./mode_network"
+import { neoxt4 } from "./neoxt4"
 
 type AbiItem =
 	| AbiConstructor
@@ -38,7 +39,7 @@ type AbiItem =
 // const alchelmyKey = process.env?.NEXT_PUBLIC_ALCHEMY_KEY ?? ''
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-	[arbitrum, mode_network, karak],
+	[arbitrum, mode_network, karak, neoxt4],
 	[
 		publicProvider(),
 		alchemyProvider({ apiKey: "Oie23PxOOG_d1d7uT3FQGE6sgrLu7Dl9" }),

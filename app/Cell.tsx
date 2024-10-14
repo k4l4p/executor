@@ -1,8 +1,6 @@
 import { AbiFunction } from "abitype"
 import React, { ReactNode, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
-import { Abi } from "viem"
-import { useContractRead } from "wagmi"
 import {
 	prepareWriteContract,
 	readContract,
@@ -77,14 +75,13 @@ const Cell = ({ info, address }: CellType) => {
 						functionName: info.name as never,
 						args,
 					})
-					if(Array.isArray(ret)) {
-						setReturnValue(ret.map((item, idx) => {
-							const name = info.outputs[idx]?.name ?? idx
-							return <div key={idx}>
-								{`${name}: ${item}`}
-							</div>
-						}))
-					
+					if (Array.isArray(ret)) {
+						setReturnValue(
+							ret.map((item, idx) => {
+								const name = info.outputs[idx]?.name ?? idx
+								return <div key={idx}>{`${name}: ${item}`}</div>
+							})
+						)
 					} else {
 						setReturnValue((ret as any).toString())
 					}
@@ -97,7 +94,6 @@ const Cell = ({ info, address }: CellType) => {
 			console.log(err)
 		}
 	}
-
 	return (
 		<li
 			key={info.name}
